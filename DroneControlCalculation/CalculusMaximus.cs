@@ -109,30 +109,30 @@ namespace DroneControlCalculation
 			shouldY = shouldY / firstTuple.shouldData.Count;
 			shouldZ = shouldZ / firstTuple.shouldData.Count;
 
+			if(float.IsNaN(shouldZ) || float.IsNaN(shouldX) || float.IsNaN(shouldY) || float.IsNaN(isX) || float.IsNaN(isY) || float.IsNaN(isZ))
+			{
+				//Debug.Print("1");
+				return;
+			}
+
 			//comparison only Y value
-			float diff = shouldY - isY;
+			float diffY = shouldY - isY;
+			float diffX = shouldX - isX;
+			float diffZ = shouldZ - isZ;
 
-			if(diff >= 1.0f)
+			//Debug.Print(diffY.ToString());
+			if(float.IsNaN(diffY) || float.IsNaN(diffZ) || float.IsNaN(diffX))
 			{
-				diff = 1.0f;
-			}
-			else if(diff <= -1.0f)
-			{
-				diff = -1.0f;
-			}
-
-			Debug.Print(diff.ToString());
-			if(float.IsNaN(diff))
-			{
+				//Debug.Print("2");
 				return;
 			}
 
 			var document = new BsonDocument
 							{
 								 { "Command", "control" },
-								 { "Velocity_x", "0" },
-								 { "Velocity_y", diff.ToString().Replace(',', '.') },
-								 { "Velocity_z", "0" },
+								 { "Velocity_x", diffX.ToString().Replace(',', '.') },
+								 { "Velocity_y", diffY.ToString().Replace(',', '.') },
+								 { "Velocity_z", diffZ.ToString().Replace(',', '.') },
 								 { "Timestamp", DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds.ToString()}
 							};
 			dbInterface.sendCommand(document);
