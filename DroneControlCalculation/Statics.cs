@@ -16,6 +16,5 @@ namespace DroneControlCalculation
 		public static string Y = "y";
 		public static string Z = "z";
 		public static string TIMESTAMP = "Timestamp";
-
 	}
 }

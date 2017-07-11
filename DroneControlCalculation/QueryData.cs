@@ -10,10 +10,10 @@ namespace DroneControlCalculation
 	public class QueryData
 	{
 		public double queryTimeStamp = double.MinValue;
-		public List<BsonDocument> shouldData = null;
-		public List<BsonDocument> isData = null;
+		public BsonDocument shouldData = null;
+		public BsonDocument isData = null;
 
-		public QueryData(List<BsonDocument> _should, List<BsonDocument> _is)
+		public QueryData(BsonDocument _should, BsonDocument _is)
 		{
 			shouldData = _should;
 			isData = _is;

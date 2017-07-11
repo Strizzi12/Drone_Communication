@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using System.Diagnostics;
+using System.Collections;
 
 namespace DroneControlCalculation
 {
@@ -59,8 +61,8 @@ namespace DroneControlCalculation
 
 			IMongoCollection<BsonDocument> shouldCollection = null;
 			IMongoCollection<BsonDocument> isCollection = null;
-			List<BsonDocument> shouldTuples = null;
-			List<BsonDocument> isTuples = null;
+			BsonDocument shouldTuple = null;
+			BsonDocument isTuple = null;
 
 			shouldCollection = Database.GetCollection<BsonDocument>(Statics.SHOULDCOORDINATES);
 			isCollection = Database.GetCollection<BsonDocument>(Statics.ISCOORDINATES);
@@ -70,14 +72,48 @@ namespace DroneControlCalculation
 				return -1;
 			}
 
-			shouldTuples = shouldCollection.Find(FilterDefinition<BsonDocument>.Empty)?.ToList();
+			//shouldTuples = shouldCollection.Find(<BsonDocument>.Empty)?.ToList();
+			//shouldTuples = shouldCollectio.n
+
+
+			//SortByBuilder sbb = new SortByBuilder();
+			//sbb.Descending("_id");
+			//var allDocs = collection.FindAllAs<BsonDocument>().SetSortOrder(sbb).SetLimit(N);
+
+
+			try
+			{
+				var test = shouldCollection.Find(FilterDefinition<BsonDocument>.Empty);
+				if(test == null || test.Count() == 0)
+				{
+					return 0;
+				}
+
+				shouldTuple = test.Sort("{Timestamp: -1}").Limit(1).First();
+
+				test = isCollection.Find(FilterDefinition<BsonDocument>.Empty);
+				if(test == null || test.Count() == 0)
+				{
+					return 0;
+				}
+
+				isTuple = test.Sort("{Timestamp: -1}")?.Limit(1)?.First();
+			}
+			catch(Exception ex)
+			{
+				Debug.Print(ex.Message);
+				return 0;
+			}
+
+			if(shouldTuple == null || isTuple == null)
+			{
+				return 0;
+			}
+
+			queryData.Add(new QueryData(shouldTuple, isTuple));
+
 			shouldCollection.DeleteManyAsync(FilterDefinition<BsonDocument>.Empty);
-
-			isTuples = isCollection.Find(FilterDefinition<BsonDocument>.Empty)?.ToList();
 			isCollection.DeleteManyAsync(FilterDefinition<BsonDocument>.Empty);
-
-			queryData.Add(new QueryData(shouldTuples, isTuples));
-
 			return 0;
 		}
 

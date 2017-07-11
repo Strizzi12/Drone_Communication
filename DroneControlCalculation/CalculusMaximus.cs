@@ -15,6 +15,7 @@ namespace DroneControlCalculation
 {
 	public class CalculusMaximus
 	{
+		private static float velocityFactor025ms = 0.1f;
 
 		/// <summary>
 		/// Backgroundworker DoWork-Method
@@ -39,25 +40,26 @@ namespace DroneControlCalculation
 					QueryData firstTuple = new QueryData(tmp);
 					dbInterface.queryData.Remove(tmp);
 
-					Thread tmpThread = new Thread(delegate () { calcUpDownCommand(dbInterface, firstTuple); });
-					tmpThread.Start();
+					calcControlCommand(dbInterface, firstTuple);
+					//Thread tmpThread = new Thread(delegate () { calcControlCommand(dbInterface, firstTuple); });
+					//tmpThread.Start();
+					//Thread.Sleep(250);
 				}
 			}
 		}
 
-		private static void calcUpDownCommand(DBInterface dbInterface, QueryData firstTuple)
+		private static void calcControlCommand(DBInterface dbInterface, QueryData firstTuple)
 		{
+			float velocityFactor1ms = 1.0f;
+
 			if(dbInterface == null || firstTuple == null)
 			{
 				return;
 			}
 
 			// ### IS position
-			float tmpX = 0.0f;
 			float isX = 0.0f;
-			float tmpY = 0.0f;
 			float isY = 0.0f;
-			float tmpZ = 0.0f;
 			float isZ = 0.0f;
 
 			if(firstTuple.isData == null)
@@ -65,28 +67,14 @@ namespace DroneControlCalculation
 				return;
 			}
 
-			foreach(var item in firstTuple.isData)
-			{
-				float.TryParse(item[Statics.X].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out tmpX);
-				float.TryParse(item[Statics.Y].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out tmpY);
-				float.TryParse(item[Statics.Z].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out tmpZ);
+			float.TryParse(firstTuple.isData[Statics.X].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out isX);
+			float.TryParse(firstTuple.isData[Statics.Y].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out isY);
+			float.TryParse(firstTuple.isData[Statics.Z].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out isZ);
 
-				isX += tmpX;
-				isY += tmpY;
-				isZ += tmpZ;
-
-			}
-
-			isX = isX / firstTuple.isData.Count;
-			isY = isY / firstTuple.isData.Count;
-			isZ = isZ / firstTuple.isData.Count;
 
 			// ### SHOULD position
-			tmpX = 0.0f;
 			float shouldX = 0.0f;
-			tmpY = 0.0f;
 			float shouldY = 0.0f;
-			tmpZ = 0.0f;
 			float shouldZ = 0.0f;
 
 			if(firstTuple.shouldData == null)
@@ -94,24 +82,12 @@ namespace DroneControlCalculation
 				return;
 			}
 
-			foreach(var item in firstTuple.shouldData)
-			{
-				float.TryParse(item[Statics.X].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out tmpX);
-				float.TryParse(item[Statics.Y].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out tmpY);
-				float.TryParse(item[Statics.Z].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out tmpZ);
-
-				shouldX += tmpX;
-				shouldY += tmpY;
-				shouldZ += tmpZ;
-			}
-
-			shouldX = shouldX / firstTuple.shouldData.Count;
-			shouldY = shouldY / firstTuple.shouldData.Count;
-			shouldZ = shouldZ / firstTuple.shouldData.Count;
+			float.TryParse(firstTuple.shouldData[Statics.X].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out shouldX);
+			float.TryParse(firstTuple.shouldData[Statics.Y].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out shouldY);
+			float.TryParse(firstTuple.shouldData[Statics.Z].AsString, NumberStyles.Any, CultureInfo.InvariantCulture, out shouldZ);
 
 			if(float.IsNaN(shouldZ) || float.IsNaN(shouldX) || float.IsNaN(shouldY) || float.IsNaN(isX) || float.IsNaN(isY) || float.IsNaN(isZ))
 			{
-				//Debug.Print("1");
 				return;
 			}
 
@@ -120,12 +96,44 @@ namespace DroneControlCalculation
 			float diffX = shouldX - isX;
 			float diffZ = shouldZ - isZ;
 
-			//Debug.Print(diffY.ToString());
 			if(float.IsNaN(diffY) || float.IsNaN(diffZ) || float.IsNaN(diffX))
 			{
-				//Debug.Print("2");
 				return;
 			}
+
+			if(myAbs(diffX) < 0.3f || myAbs(diffZ) < 0.3f)
+			{
+				velocityFactor1ms = velocityFactor1ms * velocityFactor025ms;
+			}
+
+			if(diffX > 0f && diffZ < 0f)
+			{
+				diffX = -velocityFactor1ms * myAbs(diffX);
+				diffZ = -velocityFactor1ms * myAbs(diffZ);
+
+			}
+			else if(diffX < 0f && diffZ < 0f)
+			{
+				diffX = velocityFactor1ms * myAbs(diffX);
+				diffZ = -velocityFactor1ms * myAbs(diffZ);
+			}
+			else if(diffX > 0f && diffZ > 0f)
+			{
+				diffX = -velocityFactor1ms * myAbs(diffX);
+				diffZ = velocityFactor1ms * myAbs(diffZ);
+			}
+			else if(diffX < 0f && diffZ > 0f)
+			{
+				diffX = velocityFactor1ms * myAbs(diffX);
+				diffZ = velocityFactor1ms * myAbs(diffZ);
+			}
+
+			if(diffY > 1.5f)
+			{
+				diffY = 0.5f;
+			}
+			diffY = velocityFactor1ms * diffY;
+			Debug.WriteLine("X=" + diffX + " Y=" + diffY + " Z=" + diffZ);
 
 			var document = new BsonDocument
 							{
@@ -136,9 +144,18 @@ namespace DroneControlCalculation
 								 { "Timestamp", DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds.ToString()}
 							};
 			dbInterface.sendCommand(document);
-
-
 		}
 
+		static float myAbs(float value)
+		{
+			if(value < 0)
+			{
+				return (value * -1f);
+			}
+			else
+			{
+				return value;
+			}
+		}
 	}
 }

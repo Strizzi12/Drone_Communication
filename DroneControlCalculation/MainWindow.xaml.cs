@@ -27,11 +27,7 @@ namespace DroneControlCalculation
         public MainWindow()
         {
             InitializeComponent();
-
 			initComponents();
-
-
-
 			while(true)
 			{
 				dbInterface.QueryData();
