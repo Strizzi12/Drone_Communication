@@ -1,8 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharpNamedPipePrototype", "CSharpNamedPipePrototype", "{1E2C95B7-23B4-49AF-8546-233A1381F831}"
+	ProjectSection(SolutionItems) = preProject
+		README.txt = README.txt
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PiApp", "PiApp\PiApp.csproj", "{A09B456F-E91D-4202-8D07-0B4294E642B4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{54277716-A671-477D-B64C-8A4179933793} = {54277716-A671-477D-B64C-8A4179933793}
@@ -14,11 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroneControlCalculation", "
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrototypeServer", "Prototype\PrototypeServer.csproj", "{129BBDAC-0121-4521-A539-8B926E24F1D5}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharpNamedPipePrototype", "CSharpNamedPipePrototype", "{1E2C95B7-23B4-49AF-8546-233A1381F831}"
-	ProjectSection(SolutionItems) = preProject
-		README.txt = README.txt
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrototypeClient", "PrototypeClient\PrototypeClient.csproj", "{7C20953C-157F-42B2-8B0A-0C3F396FD708}"
 EndProject

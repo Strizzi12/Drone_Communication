@@ -1,0 +1,15 @@
+#!/bin/bash
+# Starts ROS driver and driver for bebop-drone
+dhclient enp0s17
+echo "Script started!"
+cd /home/vr/Desktop
+chmod +x ROS_Driver
+chmod +x ROS_DroneDriver
+chmod +x ROS_Commands
+gnome-terminal -e ./ROS_Driver
+sleep 15s
+gnome-terminal -e ./ROS_DroneDriver
+sleep 5s
+#gnome-terminal -e ./ROS_Commands
+echo "Script terminated!"
+

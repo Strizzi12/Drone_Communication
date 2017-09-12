@@ -1,0 +1,12 @@
+#!/bin/bash
+# Starts ROS driver and driver for bebop-drone
+
+echo "Script started!"
+cd ..
+cd ..
+cd ..
+cd ..
+cd root/bebop_ws/src/bebop_autonomy/bebop_driver
+source /root/bebop_ws/devel/setup.bash
+roslaunch bebop_tools joy_teleop.launch
+echo "Script terminated!"
